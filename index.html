@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Attendance Management System</title>
+  <style>
+    :root {
+      --bg: #f8fafc;
+      --card: #ffffff;
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --success: #16a34a;
+      --danger: #dc2626;
+      --text: #0f172a;
+      --muted: #64748b;
+      --border: #e2e8f0;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      padding: 2rem 1rem;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    header {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 2rem;
+      padding-bottom: 1rem;
+      border-bottom: 2px solid var(--border);
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    button {
+      background-color: var(--primary);
+      color: #fff;
+      border: none;
+      padding: 0.6rem 1rem;
+      border-radius: 6px;
+      font-weight: 500;
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: background-color 0.15s;
+    }
+
+    button:hover {
+      background-color: var(--primary-hover);
+    }
+
+    button.secondary {
+      background-color: #e2e8f0;
+      color: var(--text);
+    }
+
+    button.secondary:hover {
+      background-color: #cbd5e1;
+    }
+
+    button.danger {
+      background-color: #fee2e2;
+      color: var(--danger);
+    }
+
+    button.danger:hover {
+      background-color: #fecaca;
+    }
+
+    #alert-box {
+      display: none;
+      padding: 0.85rem 1rem;
+      border-radius: 6px;
+      margin-bottom: 1.5rem;
+      font-weight: 500;
+      font-size: 0.95rem;
+    }
+
+    .alert-success {
+      background-color: #dcfce7;
+      color: #166534;
+      border: 1px solid #bbf7d0;
+    }
+
+    .alert-error {
+      background-color: #fee2e2;
+      color: #991b1b;
+      border: 1px solid #fecaca;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1.25rem;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+    }
+
+    .card h2 {
+      font-size: 1.1rem;
+      margin-bottom: 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .form-group {
+      margin-bottom: 0.85rem;
+    }
+
+    label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--muted);
+      margin-bottom: 0.3rem;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 0.55rem 0.75rem;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 0.95rem;
+      background-color: #fff;
+    }
+
+    input:focus, select:focus {
+      outline: 2px solid var(--primary);
+      border-color: transparent;
+    }
+
+    .list-box {
+      max-height: 200px;
+      overflow-y: auto;
+      margin-top: 1rem;
+      border-top: 1px solid var(--border);
+      padding-top: 0.75rem;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+    }
+
+    th, td {
+      text-align: left;
+      padding: 0.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    th {
+      color: var(--muted);
+      font-weight: 600;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 0.15rem 0.5rem;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+
+    .badge-present {
+      background-color: #dcfce7;
+      color: var(--success);
+    }
+
+    .badge-absent {
+      background-color: #fee2e2;
+      color: var(--danger);
+    }
+
+    .stats-banner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background-color: #f1f5f9;
+      padding: 1rem;
+      border-radius: 6px;
+      margin: 1rem 0;
+    }
+
+    .percentage-value {
+      font-size: 1.5rem;
+      font-weight: 700;
+    }
+
+    #test-output {
+      display: none;
+      background: #0f172a;
+      color: #f8fafc;
+      padding: 1rem;
+      border-radius: 8px;
+      font-family: monospace;
+      font-size: 0.85rem;
+      margin-bottom: 1.5rem;
+      white-space: pre-wrap;
+    }
+
+    .empty-msg {
+      color: var(--muted);
+      font-size: 0.9rem;
+      font-style: italic;
+      padding: 0.5rem 0;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <h1>SMART ATTENDANCE MANAGEMENT SYSTEM</h1>
+    <div class="header-actions">
+      <button class="secondary" onclick="runSelfTests()">Run 11 Self-Tests</button>
+      <button class="secondary" onclick="loadDemoData()">Load Demo Data</button>
+      <button class="danger" onclick="resetSystem()">Reset All</button>
+    </div>
+  </header>
+
+  <div id="alert-box"></div>
+  <div id="test-output"></div>
+
+  <div class="grid">
+    <!-- 1 & 3: Add and List Students -->
+    <div class="card">
+      <h2>1. Students</h2>
+      <form onsubmit="handleAddStudent(event)">
+        <div class="form-group">
+          <label for="student-roll">Roll Number</label>
+          <input type="text" id="student-roll" placeholder="e.g., S001" required>
+        </div>
+        <div class="form-group">
+          <label for="student-name">Student Name</label>
+          <input type="text" id="student-name" placeholder="e.g., Riya Sharma" required>
+        </div>
+        <button type="submit" style="width: 100%;">Add Student</button>
+      </form>
+      <div class="list-box" id="student-list"></div>
+    </div>
+
+    <!-- 2 & 4: Add and List Courses -->
+    <div class="card">
+      <h2>2. Courses</h2>
+      <form onsubmit="handleAddCourse(event)">
+        <div class="form-group">
+          <label for="course-code">Course Code</label>
+          <input type="text" id="course-code" placeholder="e.g., CCSE0355" required>
+        </div>
+        <div class="form-group">
+          <label for="course-name">Course Name</label>
+          <input type="text" id="course-name" placeholder="e.g., Object Oriented Techniques" required>
+        </div>
+        <button type="submit" style="width: 100%;">Add Course</button>
+      </form>
+      <div class="list-box" id="course-list"></div>
+    </div>
+
+    <!-- 5: Mark Attendance -->
+    <div class="card">
+      <h2>3. Mark Attendance</h2>
+      <form onsubmit="handleMarkAttendance(event)">
+        <div class="form-group">
+          <label for="mark-roll">Student</label>
+          <select id="mark-roll" required></select>
+        </div>
+        <div class="form-group">
+          <label for="mark-code">Course</label>
+          <select id="mark-code" required></select>
+        </div>
+        <div class="form-group">
+          <label for="mark-date">Date (YYYY-MM-DD)</label>
+          <input type="date" id="mark-date" required>
+        </div>
+        <div class="form-group">
+          <label for="mark-status">Status</label>
+          <select id="mark-status" required>
+            <option value="PRESENT">PRESENT (P)</option>
+            <option value="ABSENT">ABSENT (A)</option>
+          </select>
+        </div>
+        <button type="submit" style="width: 100%;">Record Attendance</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- 6 & 7: View Attendance & Percentage -->
+  <div class="card">
+    <h2>4. View Attendance & Percentage</h2>
+    <div class="grid" style="margin-bottom: 0;">
+      <div class="form-group">
+        <label for="view-roll">Select Student</label>
+        <select id="view-roll" onchange="renderAttendanceView()"></select>
+      </div>
+      <div class="form-group">
+        <label for="view-code">Select Course</label>
+        <select id="view-code" onchange="renderAttendanceView()"></select>
+      </div>
+    </div>
+
+    <div class="stats-banner">
+      <div>
+        <strong>Attendance Percentage</strong>
+        <div id="stats-subtitle" style="font-size: 0.85rem; color: var(--muted);">Select a student and course</div>
+      </div>
+      <div class="percentage-value" id="percentage-display">--</div>
+    </div>
+
+    <div id="attendance-records-container"></div>
+  </div>
+</div>
+
+<script>
+  // --- PORTED CORE JAVA LOGIC ---
+  const Status = Object.freeze({ PRESENT: 'PRESENT', ABSENT: 'ABSENT' });
+
+  function required(value, label) {
+    if (value === null || value === undefined || String(value).trim() === '') {
+      throw new Error(label + ' cannot be blank.');
+    }
+    return String(value).trim();
+  }
+
+  function parseStatus(text) {
+    const t = String(text || '').trim().toUpperCase();
+    if (t === 'P' || t === 'PRESENT') return Status.PRESENT;
+    if (t === 'A' || t === 'ABSENT') return Status.ABSENT;
+    throw new Error('Enter P/Present or A/Absent.');
+  }
+
+  class Student {
+    constructor(rollNo, name) {
+      this.rollNo = required(rollNo, 'Roll number');
+      this.name = required(name, 'Name');
+    }
+  }
+
+  class Course {
+    constructor(code, name) {
+      this.code = required(code, 'Course code').toUpperCase();
+      this.name = required(name, 'Course name');
+    }
+  }
+
+  class AttendanceRecord {
+    constructor(student, course, date, status) {
+      if (!student || !course || !date || !status) {
+        throw new Error('All attendance record fields are required.');
+      }
+      this.student = student;
+      this.course = course;
+      this.date = date;
+      this.status = status;
+    }
+  }
+
+  class AttendanceManager {
+    constructor() {
+      this.students = new Map();
+      this.courses = new Map();
+      this.records = [];
+    }
+
+    addStudent(roll, name) {
+      const s = new Student(roll, name);
+      if (this.students.has(s.rollNo)) {
+        throw new Error('Student already exists.');
+      }
+      this.students.set(s.rollNo, s);
+    }
+
+    addCourse(code, name) {
+      const c = new Course(code, name);
+      if (this.courses.has(c.code)) {
+        throw new Error('Course already exists.');
+      }
+      this.courses.set(c.code, c);
+    }
+
+    findStudent(roll) {
+      const key = required(roll, 'Roll number');
+      const s = this.students.get(key);
+      if (!s) throw new Error('Unknown student.');
+      return s;
+    }
+
+    findCourse(code) {
+      const key = required(code, 'Course code').toUpperCase();
+      const c = this.courses.get(key);
+      if (!c) throw new Error('Unknown course.');
+      return c;
+    }
+
+    markAttendance(roll, code, date, status) {
+      const s = this.findStudent(roll);
+      const c = this.findCourse(code);
+      const d = required(date, 'Date');
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(d) || isNaN(Date.parse(d))) {
+        throw new Error('Invalid date. Use YYYY-MM-DD.');
+      }
+      const st = parseStatus(status);
+
+      for (const r of this.records) {
+        if (r.student === s && r.course === c && r.date === d) {
+          throw new Error('Duplicate attendance.');
+        }
+      }
+      this.records.push(new AttendanceRecord(s, c, d, st));
+    }
+
+    getRecords(roll, code) {
+      const s = this.findStudent(roll);
+      const c = this.findCourse(code);
+      return this.records
+        .filter(r => r.student === s && r.course === c)
+        .sort((a, b) => a.date.localeCompare(b.date));
+    }
+
+    percentage(roll, code) {
+      const list = this.getRecords(roll, code);
+      if (list.length === 0) return null;
+      const presentCount = list.filter(r => r.status === Status.PRESENT).length;
+      return (presentCount * 100.0) / list.length;
+    }
+  }
+
+  // --- STATE & STORAGE MANAGEMENT ---
+  const STORAGE_KEY = 'smart_attendance_state_v1';
+  let manager = new AttendanceManager();
+
+  function saveState() {
+    const data = {
+      students: Array.from(manager.students.values()),
+      courses: Array.from(manager.courses.values()),
+      records: manager.records.map(r => ({
+        rollNo: r.student.rollNo,
+        courseCode: r.course.code,
+        date: r.date,
+        status: r.status
+      }))
+    };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  }
+
+  function loadState() {
+    manager = new AttendanceManager();
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) {
+      // Default course from Main.java
+      manager.addCourse('CCSE0355', 'Object Oriented Techniques using Java');
+      saveState();
+      return;
+    }
+    try {
+      const data = JSON.parse(raw);
+      (data.students || []).forEach(s => manager.addStudent(s.rollNo, s.name));
+      (data.courses || []).forEach(c => manager.addCourse(c.code, c.name));
+      (data.records || []).forEach(r => manager.markAttendance(r.rollNo, r.courseCode, r.date, r.status));
+    } catch (e) {
+      console.error('Failed to load state, resetting to default:', e);
+      manager = new AttendanceManager();
+      manager.addCourse('CCSE0355', 'Object Oriented Techniques using Java');
+    }
+  }
+
+  // --- UI HANDLERS & RENDERING ---
+  function showAlert(message, isError = false) {
+    const box = document.getElementById('alert-box');
+    box.textContent = message;
+    box.className = isError ? 'alert-error' : 'alert-success';
+    box.style.display = 'block';
+    setTimeout(() => { box.style.display = 'none'; }, 4000);
+  }
+
+  function handleAddStudent(e) {
+    e.preventDefault();
+    const rollInput = document.getElementById('student-roll');
+    const nameInput = document.getElementById('student-name');
+    try {
+      manager.addStudent(rollInput.value, nameInput.value);
+      saveState();
+      rollInput.value = '';
+      nameInput.value = '';
+      renderAll();
+      showAlert('Student added.');
+    } catch (err) {
+      showAlert('Error: ' + err.message, true);
+    }
+  }
+
+  function handleAddCourse(e) {
+    e.preventDefault();
+    const codeInput = document.getElementById('course-code');
+    const nameInput = document.getElementById('course-name');
+    try {
+      manager.addCourse(codeInput.value, nameInput.value);
+      saveState();
+      codeInput.value = '';
+      nameInput.value = '';
+      renderAll();
+      showAlert('Course added.');
+    } catch (err) {
+      showAlert('Error: ' + err.message, true);
+    }
+  }
+
+  function handleMarkAttendance(e) {
+    e.preventDefault();
+    const roll = document.getElementById('mark-roll').value;
+    const code = document.getElementById('mark-code').value;
+    const date = document.getElementById('mark-date').value;
+    const status = document.getElementById('mark-status').value;
+    try {
+      manager.markAttendance(roll, code, date, status);
+      saveState();
+      // Sync the viewer dropdowns to the newly marked student & course
+      document.getElementById('view-roll').value = roll;
+      document.getElementById('view-code').value = code;
+      renderAttendanceView();
+      showAlert('Attendance recorded.');
+    } catch (err) {
+      showAlert('Error: ' + err.message, true);
+    }
+  }
+
+  function renderAll() {
+    // 1. Render Student List
+    const studentListEl = document.getElementById('student-list');
+    const students = Array.from(manager.students.values());
+    if (students.length === 0) {
+      studentListEl.innerHTML = '<div class="empty-msg">No students registered.</div>';
+    } else {
+      studentListEl.innerHTML = `
+        <table>
+          <thead><tr><th>Roll</th><th>Name</th></tr></thead>
+          <tbody>
+            ${students.map(s => `<tr><td><strong>${escapeHtml(s.rollNo)}</strong></td><td>${escapeHtml(s.name)}</td></tr>`).join('')}
+          </tbody>
+        </table>`;
+    }
+
+    // 2. Render Course List
+    const courseListEl = document.getElementById('course-list');
+    const courses = Array.from(manager.courses.values());
+    if (courses.length === 0) {
+      courseListEl.innerHTML = '<div class="empty-msg">No courses registered.</div>';
+    } else {
+      courseListEl.innerHTML = `
+        <table>
+          <thead><tr><th>Code</th><th>Course Name</th></tr></thead>
+          <tbody>
+            ${courses.map(c => `<tr><td><strong>${escapeHtml(c.code)}</strong></td><td>${escapeHtml(c.name)}</td></tr>`).join('')}
+          </tbody>
+        </table>`;
+    }
+
+    // 3. Populate Select Dropdowns
+    populateSelect('mark-roll', students.map(s => ({ val: s.rollNo, text: `${s.rollNo} — ${s.name}` })), 'No students');
+    populateSelect('view-roll', students.map(s => ({ val: s.rollNo, text: `${s.rollNo} — ${s.name}` })), 'No students');
+    populateSelect('mark-code', courses.map(c => ({ val: c.code, text: `${c.code} — ${c.name}` })), 'No courses');
+    populateSelect('view-code', courses.map(c => ({ val: c.code, text: `${c.code} — ${c.name}` })), 'No courses');
+
+    renderAttendanceView();
+  }
+
+  function populateSelect(id, items, emptyLabel) {
+    const sel = document.getElementById(id);
+    const prev = sel.value;
+    if (items.length === 0) {
+      sel.innerHTML = `<option value="">${emptyLabel}</option>`;
+      return;
+    }
+    sel.innerHTML = items.map(i => `<option value="${escapeHtml(i.val)}">${escapeHtml(i.text)}</option>`).join('');
+    if (items.some(i => i.val === prev)) {
+      sel.value = prev;
+    }
+  }
+
+  function renderAttendanceView() {
+    const roll = document.getElementById('view-roll').value;
+    const code = document.getElementById('view-code').value;
+    const container = document.getElementById('attendance-records-container');
+    const pctDisplay = document.getElementById('percentage-display');
+    const subtitle = document.getElementById('stats-subtitle');
+
+    if (!roll || !code) {
+      pctDisplay.textContent = '--';
+      subtitle.textContent = 'Add and select a student and course to view records';
+      container.innerHTML = '<div class="empty-msg">No attendance records.</div>';
+      return;
+    }
+
+    try {
+      const records = manager.getRecords(roll, code);
+      const pct = manager.percentage(roll, code);
+      const student = manager.findStudent(roll);
+      const course = manager.findCourse(code);
+
+      subtitle.textContent = `${student.name} (${student.rollNo}) in ${course.code}`;
+
+      if (pct === null) {
+        pctDisplay.textContent = 'No records';
+        pctDisplay.style.color = 'var(--muted)';
+        container.innerHTML = '<div class="empty-msg">No attendance records for this student and course.</div>';
+      } else {
+        pctDisplay.textContent = pct.toFixed(2) + '%';
+        pctDisplay.style.color = pct >= 75 ? 'var(--success)' : 'var(--danger)';
+        container.innerHTML = `
+          <table>
+            <thead>
+              <tr><th>Date</th><th>Student</th><th>Course</th><th>Status</th></tr>
+            </thead>
+            <tbody>
+              ${records.map(r => `
+                <tr>
+                  <td>${escapeHtml(r.date)}</td>
+                  <td>${escapeHtml(r.student.name)}</td>
+                  <td>${escapeHtml(r.course.code)}</td>
+                  <td><span class="badge ${r.status === Status.PRESENT ? 'badge-present' : 'badge-absent'}">${r.status}</span></td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>`;
+      }
+    } catch (e) {
+      pctDisplay.textContent = '--';
+      container.innerHTML = '';
+    }
+  }
+
+  // --- SELF-TEST SUITE (PORTED FROM Main.selfTest) ---
+  function runSelfTests() {
+    const logs = [];
+    const check = (cond, name) => {
+      if (!cond) throw new Error('FAILED: ' + name);
+      logs.push('PASS: ' + name);
+    };
+    const rejects = (action, name) => {
+      try {
+        action();
+      } catch (e) {
+        check(true, name);
+        return;
+      }
+      throw new Error('FAILED: ' + name);
+    };
+
+    const outBox = document.getElementById('test-output');
+    try {
+      const m = new AttendanceManager();
+      m.addStudent('S001', 'Demo Student');
+      m.addCourse('JAVA', 'Java OOP');
+      check(m.findStudent('S001').name === 'Demo Student', 'registration');
+      check(m.percentage('S001', 'JAVA') === null, 'no records');
+
+      const d1 = '2026-10-08';
+      const d2 = '2026-10-09';
+      m.markAttendance('S001', 'JAVA', d1, Status.PRESENT);
+      m.markAttendance('S001', 'JAVA', d2, Status.ABSENT);
+      check(m.getRecords('S001', 'JAVA').length === 2, 'retrieval');
+      check(m.percentage('S001', 'JAVA') === 50.0, 'percentage');
+
+      rejects(() => m.markAttendance('S001', 'JAVA', d1, Status.ABSENT), 'duplicate attendance');
+      rejects(() => m.markAttendance('X', 'JAVA', d1, Status.PRESENT), 'unknown student');
+      rejects(() => m.markAttendance('S001', 'X', d1, Status.PRESENT), 'unknown course');
+      rejects(() => m.addStudent('S001', 'Duplicate'), 'duplicate student');
+      rejects(() => m.addCourse('java', 'Duplicate'), 'duplicate course');
+      rejects(() => m.addStudent('', 'Blank'), 'blank roll number');
+      rejects(() => parseStatus('X'), 'invalid status');
+
+      logs.push('All 11 self-tests passed.');
+      outBox.textContent = logs.join('\n');
+      outBox.style.display = 'block';
+      showAlert('All 11 self-tests passed!');
+    } catch (err) {
+      logs.push(err.message);
+      outBox.textContent = logs.join('\n');
+      outBox.style.display = 'block';
+      showAlert(err.message, true);
+    }
+  }
+
+  function loadDemoData() {
+    try {
+      if (!manager.students.has('S001')) manager.addStudent('S001', 'Aarav Mehta');
+      if (!manager.students.has('S002')) manager.addStudent('S002', 'Priya Nair');
+      if (!manager.courses.has('CS201')) manager.addCourse('CS201', 'Data Structures');
+
+      const sampleRecords = [
+        ['S001', 'CCSE0355', '2026-10-01', 'PRESENT'],
+        ['S001', 'CCSE0355', '2026-10-02', 'PRESENT'],
+        ['S001', 'CCSE0355', '2026-10-03', 'ABSENT'],
+        ['S001', 'CCSE0355', '2026-10-04', 'PRESENT'],
+        ['S002', 'CCSE0355', '2026-10-01', 'ABSENT'],
+        ['S002', 'CCSE0355', '2026-10-02', 'PRESENT']
+      ];
+      for (const [r, c, d, st] of sampleRecords) {
+        try { manager.markAttendance(r, c, d, st); } catch (_) {}
+      }
+      saveState();
+      renderAll();
+      showAlert('Demo students, courses, and attendance records loaded.');
+    } catch (e) {
+      showAlert(e.message, true);
+    }
+  }
+
+  function resetSystem() {
+    localStorage.removeItem(STORAGE_KEY);
+    document.getElementById('test-output').style.display = 'none';
+    loadState();
+    renderAll();
+    showAlert('All records cleared. Reset to default course.');
+  }
+
+  function escapeHtml(str) {
+    return String(str).replace(/[&<>"']/g, m => ({
+      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+    }[m]));
+  }
+
+  // Initialize on page load
+  document.getElementById('mark-date').valueAsDate = new Date();
+  loadState();
+  renderAll();
+</script>
+
+</body>
+</html>
